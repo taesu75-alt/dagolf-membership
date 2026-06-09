@@ -1,0 +1,233 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한솔다골프 회원권 관리 대시보드</title>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/date-fns@2.30.0/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+</head>
+<body>
+
+<!-- ── KPI ───────────────────────────────────────────────────── -->
+<div class="kpi-grid">
+  <!-- 연간 크레딧 -->
+  <div class="kpi-card">
+    <div class="kpi-header">연간 크레딧</div>
+    <div class="kpi-body">
+      <div class="annual-num" id="kpi-used">41 <span style="font-size:15px;color:#6b7280;font-weight:400">/ 80 cr</span></div>
+      <div class="annual-sub">2026년 확정 사용</div>
+      <div class="progress-track"><div class="progress-fill" id="kpi-bar" style="width:51.25%"></div></div>
+      <div class="annual-remain" id="kpi-remain">잔여 <strong>39 cr</strong></div>
+    </div>
+  </div>
+
+  <!-- 당월 (6월) -->
+  <div class="kpi-card">
+    <div class="kpi-header month-cur" id="hdr-cur">당월 현황 (6월)</div>
+    <div class="kpi-body" style="padding:0">
+      <div class="month-rows">
+        <div class="month-row" style="padding: 8px 14px;">
+          <div class="row-label">평일</div>
+          <div class="row-content">
+            <div class="row-main" id="cur-wd">1 <span style="font-size:13px;color:#6b7280;font-weight:400">건</span></div>
+          </div>
+        </div>
+        <div class="month-row" style="padding: 8px 14px;">
+          <div class="row-label">주말</div>
+          <div class="row-content">
+            <div class="row-main" id="cur-we-main">2 <span style="font-size:13px;color:#6b7280;font-weight:400">/ 3</span> <span class="badge badge-yellow" id="cur-we-badge">주의</span></div>
+            <div class="row-sub" id="cur-we-sub">
+              <span>토 <strong id="cur-sat">1</strong>/2 <span class="badge badge-blue">여유</span></span>
+              <span>일 <strong id="cur-sun">1</strong></span>
+            </div>
+          </div>
+        </div>
+        <div class="month-row" style="padding: 8px 14px;">
+          <div class="row-label">이벤트</div>
+          <div class="row-content">
+            <div class="row-main" id="cur-ev">1 <span style="font-size:13px;color:#6b7280;font-weight:400">건</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 차월 (7월) -->
+  <div class="kpi-card">
+    <div class="kpi-header month-next" id="hdr-next">차월 현황 (7월)</div>
+    <div class="kpi-body" style="padding:0">
+      <div class="month-rows">
+        <div class="month-row" style="padding: 8px 14px;">
+          <div class="row-label">평일</div>
+          <div class="row-content">
+            <div class="row-main" id="nxt-wd">0 <span style="font-size:13px;color:#6b7280;font-weight:400">건</span></div>
+          </div>
+        </div>
+        <div class="month-row" style="padding: 8px 14px;">
+          <div class="row-label">주말</div>
+          <div class="row-content">
+            <div class="row-main" id="nxt-we-main">0 <span style="font-size:13px;color:#6b7280;font-weight:400">/ 3</span> <span class="badge badge-blue">여유</span></div>
+            <div class="row-sub" id="nxt-we-sub">
+              <span>토 <strong id="nxt-sat">0</strong>/2 <span class="badge badge-blue">여유</span></span>
+              <span>일 <strong id="nxt-sun">0</strong></span>
+            </div>
+          </div>
+        </div>
+        <div class="month-row" style="padding: 8px 14px;">
+          <div class="row-label">이벤트</div>
+          <div class="row-content">
+            <div class="row-main" id="nxt-ev">0 <span style="font-size:13px;color:#6b7280;font-weight:400">건</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 탭 ────────────────────────────────────────────────────── -->
+<div class="tabs">
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('booking',this)">예약 관리</button>
+    <button class="tab-btn" onclick="switchTab('stats',this)">임원별 통계</button>
+    <button class="tab-btn" onclick="switchTab('hist25',this)">2025 이력</button>
+  </div>
+
+  <!-- 예약 관리 -->
+  <div class="tab-panel active" id="tab-booking">
+
+    <!-- 예약 추가 폼 -->
+    <div class="add-form">
+      <div class="form-title">예약 추가</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">날짜</label>
+          <input type="date" class="form-input" id="f-date" onchange="onDateChange()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">구분</label>
+          <select class="form-select" id="f-type" onchange="onTypeChange()">
+            <option value="general">일반</option>
+            <option value="event">이벤트</option>
+          </select>
+        </div>
+        <div class="form-group" id="fg-exec">
+          <label class="form-label">임원</label>
+          <select class="form-select" id="f-exec">
+            <option value="">선택</option>
+            <option>곽상효</option><option>김명산</option><option>정용혁</option>
+            <option>김태수</option><option>이해성</option><option>이상훈</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">상태</label>
+          <select class="form-select" id="f-status">
+            <option value="hope">희망</option>
+            <option value="confirmed">확정</option>
+          </select>
+        </div>
+      </div>
+      <div id="cr-display" style="margin-bottom:8px"></div>
+      <div id="cr-limit-warn" style="margin-bottom:8px"></div>
+      <div class="form-actions">
+        <button class="btn btn-secondary" onclick="resetForm()">초기화</button>
+        <button class="btn btn-primary" onclick="addBooking()">추가</button>
+      </div>
+    </div>
+
+    <!-- 달력 -->
+    <div class="cal-header">
+      <button class="cal-nav" onclick="calPrev()">&#8249;</button>
+      <div class="cal-title" id="cal-title"></div>
+      <button class="cal-nav" onclick="calNext()">&#8250;</button>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot dot-used"></div>사용</div>
+      <div class="legend-item"><div class="legend-dot dot-confirmed"></div>예약(확정)</div>
+      <div class="legend-item"><div class="legend-dot dot-pending"></div>예약(미확정)</div>
+      <div class="legend-item"><div class="legend-dot dot-hope"></div>희망</div>
+      <div class="legend-item"><div class="legend-dot dot-event"></div>이벤트</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+
+    <!-- 예약 목록 -->
+    <div style="margin-top:12px">
+      <table class="list-table">
+        <thead>
+          <tr>
+            <th>날짜</th><th>임원</th><th>구분</th><th>상태</th><th class="num">cr</th><th>액션</th>
+          </tr>
+        </thead>
+        <tbody id="future-list"></tbody>
+      </table>
+      <button class="toggle-btn" id="hist-toggle" onclick="toggleHistory()">▼ 과거 이용 내역 펼치기</button>
+      <table class="list-table" id="past-table" style="display:none">
+        <tbody id="past-list"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 임원별 통계 -->
+  <div class="tab-panel" id="tab-stats">
+    <div class="stat-section">
+      <div class="stat-title">2026 임원별 유형 분석</div>
+      <table class="stat-table">
+        <thead><tr><th>임원</th><th class="r">평일</th><th class="r">주말</th><th class="r">이벤트</th><th class="r">합계(cr)</th></tr></thead>
+        <tbody id="exec-stat-body"></tbody>
+      </table>
+    </div>
+    <div class="stat-section">
+      <div class="stat-title">2026 월별 크레딧 현황</div>
+      <table class="stat-table" id="monthly-table"></table>
+    </div>
+    <div class="stat-section">
+      <div class="stat-title">2026 월별 주말 사용 현황</div>
+      <table class="stat-table" id="monthly-limit-table"></table>
+    </div>
+  </div>
+
+  <!-- 2025 이력 -->
+  <div class="tab-panel" id="tab-hist25">
+    <div class="stat-title" style="margin-bottom:8px">2025 전체 이용 내역</div>
+    <table class="list-table">
+      <thead><tr><th>날짜</th><th>임원</th><th>구분</th><th>상태</th><th class="num">cr</th></tr></thead>
+      <tbody id="hist25-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── 관리자 모드 ─────────────────────────────────────────── -->
+<button class="admin-toggle" onclick="toggleAdmin()">▼ 관리자 모드 — 임원 관리</button>
+<div class="admin-panel" id="admin-panel">
+  <div style="font-size:12px;font-weight:700;color:#334155;margin-bottom:8px">임원 목록</div>
+  <div class="exec-list" id="exec-list"></div>
+  <div class="add-exec">
+    <input class="form-input" id="new-exec-name" placeholder="새 임원 이름" style="width:140px">
+    <button class="btn btn-primary" onclick="addExec()">추가</button>
+  </div>
+</div>
+
+
+<script src="app.js"></script>
+
+<script>
+window.addEventListener('load', () => {
+  const h = document.documentElement.scrollHeight;
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'wrks:viz:resize', height: h }, '*');
+  }
+});
+new ResizeObserver(() => {
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'wrks:viz:resize', height: document.documentElement.scrollHeight }, '*');
+  }
+}).observe(document.body);
+</script>
+</body>
+</html>
